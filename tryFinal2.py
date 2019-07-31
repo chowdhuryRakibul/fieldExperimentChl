@@ -22,14 +22,15 @@ from picamera import PiCamera
 
 import RPi.GPIO as GPIO
 
-
+#the OLED
 import Adafruit_SSD1306
 
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 
-
+#define the LEDPin connected with MOSFET
+LEDPin = 4; 
 # Raspberry Pi pin configuration:
 RST = None     # on the PiOLED this pin isnt used
 
@@ -55,7 +56,6 @@ draw = ImageDraw.Draw(image)
 # Draw a black filled box to clear the image.
 draw.rectangle((0,0,width,height), outline=0, fill=0)
 
-# Draw some shapes.
 # First define some constants to allow easy resizing of shapes.
 padding = -2
 top = padding
@@ -63,14 +63,12 @@ bottom = height-padding
 # Move left to right keeping track of the current x position for drawing shapes.
 x = 0
 
-
 # Load default font.
 font = ImageFont.load_default()
 
 
 GPIO.setmode(GPIO.BCM)
-
-GPIO.setup(4, GPIO.OUT)
+GPIO.setup(LEDPin, GPIO.OUT)
 camera = PiCamera()
 
 def getch():
@@ -138,140 +136,150 @@ draw.rectangle((0,0,width,height), outline=0, fill=0)
             
 # Write two lines of text.
 
-draw.text((x, top),       "Program Started",  font=font, fill=255)
+draw.text((x, top),       "Welcome",  font=font, fill=255)
 
 # Display image.
 disp.image(image)
 disp.display()
-folder = 'Plot_0'
+
 
 while True:
     
     try:
-        sleep(0.1)
-        ch = getch()
-        #input_state = GPIO.input(4)
+        #delay for 30s
+        sleep(15)
+        sleep(15)
+
+            
+        draw.rectangle((0,0,width,height), outline=0, fill=0)         
+        # Write two lines of text.
+        draw.text((x, top),       "Started Taking Data",  font=font, fill=255)
         
-        if(ch=='a'):
-            
-            draw.rectangle((0,0,width,height), outline=0, fill=0)
-
-                        
-            # Write two lines of text.
-
-            draw.text((x, top),       "Started Taking Data",  font=font, fill=255)
-            
-            # Display image.
-            disp.image(image)
-            disp.display()
-            
-                    
-            #visible is connected with channel 0
-            specInit(specName='VIS')
-            #Turn on the main LED
-            Spec.enable_main_led()
-            print("taking visible spectrum " + str(k))
-            count = 0
-            #Do this until the script is stopped:
-            while True:
-                    #Store the list of readings in the variable "results"
-                    results = Spec.get_calibrated_values()
-                    
-                    #skip first 10 readings
-                    count = count + 1
-                    if (count<10):
-                        continue
-
-                    reporttime = (time.strftime("%H:%M:%S"))
-                    csvresult = open("/home/pi/Desktop/habib_vai_Redefined/data/vis_"+ str(k)+".csv","a")
-                    csvresult.write(str(results[5])+ "," + str(results[4])+ "," + str(results[3])+ "," + str(results[2])+ "," +str(results[1])+ "," + str(results[0])+ "," +reporttime + "\n")
-                    csvresult.close
-                    
-                    if(count>=30):
-                        #Set the board to measure just once (it stops after that)
-                        Spec.set_measurement_mode(3)
-                        #Turn off the main LED
-                        Spec.disable_main_led()
-                        #Notify the user
-                        print("Visible Spectrum Done")
-                        
-                        draw.rectangle((0,0,width,height), outline=0, fill=0)
-
-                        
-                        # Write two lines of text.
-
-                        draw.text((x, top),       "Visible Spectrum Done",  font=font, fill=255)
-                        
-                        # Display image.
-                        disp.image(image)
-                        disp.display()
-                        
-                        break;
+        # Display image.
+        disp.image(image)
+        disp.display()
         
-            #NIR is connected with channel 1
-            specInit(specName='NIR')
-            
-            #Turn on the main LED
-            Spec.enable_main_led()
-            print("taking NIR spectrum " + str(k))
-            count = 0
-            #Do this until the script is stopped:
-            while True:
-                    #Store the list of readings in the variable "results"
-                    results = Spec.get_calibrated_values()
-                    
-                    #skip first 15 readings
-                    count = count + 1
-                    if (count<10):
-                        continue
-                    
-                    reporttime = (time.strftime("%H:%M:%S"))
-                    csvresult = open("/home/pi/Desktop/habib_vai_Redefined/data/nir_"+ str(k)+".csv","a")
-                    csvresult.write(str(results[5])+ "," + str(results[4])+ "," + str(results[3])+ "," + str(results[2])+ "," +str(results[1])+ "," + str(results[0])+ "," +reporttime + "\n")
-                    csvresult.close
-                    
-                    if(count>=30):
-                        #Set the board to measure just once (it stops after that)
-                        Spec.set_measurement_mode(3)
-                        #Turn off the main LED
-                        Spec.disable_main_led()
-                        #Notify the user
-                        print("NIR Spectrum Done")
-                        
-                        draw.rectangle((0,0,width,height), outline=0, fill=0)
-
-    
-                        # Write two lines of text.
-
-                        draw.text((x, top+8),     'NIR Spectrum Done', font=font, fill=255)
-                        
-                        # Display image.
-                        disp.image(image)
-                        disp.display()
-                        
-                        
-                        break;
-            k = k+1
-            print('**Data Taken for set ' + str(k) +'**')
-            
-            draw.rectangle((0,0,width,height), outline=0, fill=0)
-
-            
-            # Write two lines of text.
-
-            draw.text((x, top+16),       "Data taken for set " + str(k),  font=font, fill=255)
-            
-            # Display image.
-            disp.image(image)
-            disp.display()
-        elif(ch=='b'):
-            GPIO.output(4,1)
-            camera.capture('/home/pi/Desktop/habib_vai_Redefined/1.jpg') #str(i)+'.jpg')
-            sleep(5)
-            GPIO.output(4,0)
+        #visible is connected with channel 0
+        specInit(specName='VIS')
+        #Turn on the main LED
+        Spec.enable_main_led()
+        print("taking visible spectrum " + str(k))
+        count = 0
+        #Do this until the script is stopped:
+        while True:
+                #Store the list of readings in the variable "results"
+                results = Spec.get_calibrated_values()
                 
-            
-            
+                #skip first 10 readings
+                count = count + 1
+                if (count<10):
+                    continue
+
+                reporttime = (time.strftime("%H:%M:%S"))
+                csvresult = open("/home/pi/Desktop/habib_vai_Redefined/data/vis_"+ str(k)+".csv","a")
+                csvresult.write(str(results[5])+ "," + str(results[4])+ "," + str(results[3])+ "," + str(results[2])+ "," +str(results[1])+ "," + str(results[0])+ "," +reporttime + "\n")
+                csvresult.close
+                
+                if(count>=30):
+                    #Set the board to measure just once (it stops after that)
+                    Spec.set_measurement_mode(3)
+                    #Turn off the main LED
+                    Spec.disable_main_led()
+                    #Notify the user
+                    print("Visible Spectrum Done")
+                    
+                    draw.rectangle((0,0,width,height), outline=0, fill=0)
+                    
+                    # Write two lines of text.
+
+                    draw.text((x, top),       "Visible Spectrum Done",  font=font, fill=255)
+                    
+                    # Display image.
+                    disp.image(image)
+                    disp.display()
+                    
+                    break;
+    
+        #NIR is connected with channel 1
+        specInit(specName='NIR')
+        
+        #Turn on the main LED
+        Spec.enable_main_led()
+        print("taking NIR spectrum " + str(k))
+        count = 0
+        #Do this until the script is stopped:
+        while True:
+                #Store the list of readings in the variable "results"
+                results = Spec.get_calibrated_values()
+                
+                #skip first 15 readings
+                count = count + 1
+                if (count<10):
+                    continue
+                
+                reporttime = (time.strftime("%H:%M:%S"))
+                csvresult = open("/home/pi/Desktop/habib_vai_Redefined/data/nir_"+ str(k)+".csv","a")
+                csvresult.write(str(results[5])+ "," + str(results[4])+ "," + str(results[3])+ "," + str(results[2])+ "," +str(results[1])+ "," + str(results[0])+ "," +reporttime + "\n")
+                csvresult.close
+                
+                if(count>=30):
+                    #Set the board to measure just once (it stops after that)
+                    Spec.set_measurement_mode(3)
+                    #Turn off the main LED
+                    Spec.disable_main_led()
+                    #Notify the user
+                    print("NIR Spectrum Done")
+                    
+                    draw.rectangle((0,0,width,height), outline=0, fill=0)
+
+
+                    # Write two lines of text.
+
+                    draw.text((x, top+8),     'NIR Spectrum Done', font=font, fill=255)
+                    sleep(3)
+                    
+                    # Display image.
+                    disp.image(image)
+                    disp.display()
+                    
+                    
+                    break;
+        #k = k+1
+        print('**Data Taken for set ' + str(k) +'**')
+        
+        draw.rectangle((0,0,width,height), outline=0, fill=0)
+        # Write two lines of text.
+        draw.text((x, top+16),       "Data taken - " + str(k),  font=font, fill=255)
+        # Display image.
+        disp.image(image)
+        disp.display()
+
+        #take blank image and display
+        camera.capture('/home/pi/Desktop/habib_vai_Redefined/'+str(k)+'_blank.jpg')
+
+        draw.rectangle((0,0,width,height), outline=0, fill=0)
+        # Write two lines of text.
+        draw.text((x, top+16),       "Blank Image - " + str(k),  font=font, fill=255)
+        # Display image.
+        disp.image(image)
+        disp.display()
+        
+        #turn on LED, Take Image and display
+        GPIO.output(LEDPin,1)
+        camera.capture('/home/pi/Desktop/habib_vai_Redefined/'+str(k)+'_excited.jpg')
+        sleep(5)
+        GPIO.output(LEDPin,0)
+
+        draw.rectangle((0,0,width,height), outline=0, fill=0)
+        # Write two lines of text.
+        draw.text((x, top+16),       "Excited Image - " + str(k),  font=font, fill=255)
+        # Display image.
+        disp.image(image)
+        disp.display()
+
+        k = k+1
+                
+        
     except KeyboardInterrupt:
         tca_select(0)
         Spec.disable_main_led()
